@@ -1,11 +1,11 @@
 package main
 
 import (
-	"fmt"
 	"bufio"
+	"fmt"
 	"os"
-	"strings"
 	"strconv"
+	"strings"
 )
 
 func removeEmpty(tokens []string) []string {
@@ -25,13 +25,13 @@ func parse(program string) Object {
 
 type Env struct {
 	mapping map[Symbol]Object
-	outer *Env
+	outer   *Env
 }
 
 type Procedure struct {
 	body Object
 	args []Object
-	env Env
+	env  Env
 }
 
 type Object interface{}
@@ -92,17 +92,17 @@ func mult(a, b Object) Object {
 
 func add(a, b Object) Object {
 	x, y := a.(Number), b.(Number)
-	return x + y 
+	return x + y
 }
 
 func sub(a, b Object) Object {
 	x, y := a.(Number), b.(Number)
-	return x - y 
+	return x - y
 }
 
 func gt(a, b Object) Object {
 	x, y := a.(Number), b.(Number)
-	return x > y 
+	return x > y
 }
 
 func getStandardEnv() Env {
@@ -110,21 +110,21 @@ func getStandardEnv() Env {
 		mapping: make(map[Symbol]Object),
 	}
 	e.mapping["*"] = mult
-	e.mapping["+"] = add 
-	e.mapping["-"] = sub 
-	e.mapping[">"] = gt 
+	e.mapping["+"] = add
+	e.mapping["-"] = sub
+	e.mapping[">"] = gt
 	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
 
 func (e *Env) eval(x Object) Object {
 	if val, is_symbol := x.(Symbol); is_symbol {
-		return e.mapping[val] 
+		return e.mapping[val]
 	} else if _, is_list := x.(List); !is_list {
-		return x 
+		return x
 	} else if l := x.(List); l[0] == Symbol("define") {
 		val := e.eval(l[2])
-		e.mapping[ l[1].(Symbol) ] = val
+		e.mapping[l[1].(Symbol)] = val
 		return val
 	} else if l := x.(List); l[0] == Symbol("if") {
 		truth := e.eval(l[1]).(bool)
@@ -139,7 +139,7 @@ func (e *Env) eval(x Object) Object {
 		proc := e.eval(l[0])
 		a1 := e.eval(l[1])
 		a2 := e.eval(l[2])
-		res := proc.(func(Object,Object)Object)(a1, a2)
+		res := proc.(func(Object, Object) Object)(a1, a2)
 		return res
 	}
 }
@@ -158,4 +158,3 @@ func main() {
 
 	repl(e)
 }
-

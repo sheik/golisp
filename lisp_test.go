@@ -4,8 +4,8 @@ import "testing"
 
 func TestEval(t *testing.T) {
 	cases := []struct {
-		in string
-		want Object 
+		in   string
+		want Object
 	}{
 		{"(define x 10)", Number(10)},
 		{"(define r 10.3)", Number(10.3)},
