@@ -10,6 +10,10 @@ import (
 	"time"
 )
 
+const (
+	VERSION = "golisp v1.0.2.1"
+)
+
 func removeEmpty(tokens []string) []string {
 	var result []string
 	for _, c := range tokens {
@@ -224,7 +228,7 @@ func main() {
 	flag.Parse()
 
 	if *show_version {
-		fmt.Println("golisp v0.1")
+		fmt.Println(VERSION)
 		os.Exit(0)
 	}
 

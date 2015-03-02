@@ -1,5 +1,5 @@
 # golisp
-LISP interpreter written in Go
+LISP interpreter written in Go. See CHANGELOG.md for recent changes.
 
 It currently supports a subset of LISP, but important features already work:
 
