@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-//	"math"
 	"strings"
+	"strconv"
 )
 
 func removeEmpty(tokens []string) []string {
@@ -16,16 +16,31 @@ func removeEmpty(tokens []string) []string {
 	return result
 }
 
-func parse(program string) Atom {
+func parse(program string) Object {
 	tokens := tokenize(program)
 	return build_ast(&tokens)
 }
 
-type Atom interface{}
+type Env struct {
+	mapping map[Symbol]Object
+	outer *Env
+}
 
-type List []Atom
+type Procedure struct {
+	body Object
+	args []Object
+	env Env
+}
 
-func build_ast(tokens *[]string) Atom {
+type Object interface{}
+
+type List []Object
+
+type Symbol string
+
+type Number float64
+
+func build_ast(tokens *[]string) Object {
 	token := pop(tokens)
 
 	switch token {
@@ -53,8 +68,12 @@ func pop(tokens *[]string) string {
 	return token
 }
 
-func atom(token string) Atom {
-	return token 
+func atom(token string) Object {
+	n, err := strconv.ParseFloat(token, 64)
+	if err == nil {
+		return Number(n)
+	}
+	return Symbol(token)
 }
 
 func tokenize(chars string) []string {
@@ -64,19 +83,72 @@ func tokenize(chars string) []string {
 	return removeEmpty(strings.Split(chars, " "))
 }
 
-type env map[string]func(float64)float64
+func mult(a, b Object) Object {
+	x, y := a.(Number), b.(Number)
+	return x * y
+}
 
-func getStandardEnv() env {
-	var e env
-	
+func add(a, b Object) Object {
+	x, y := a.(Number), b.(Number)
+	return x + y 
+}
+
+func sub(a, b Object) Object {
+	x, y := a.(Number), b.(Number)
+	return x - y 
+}
+
+func gt(a, b Object) Object {
+	x, y := a.(Number), b.(Number)
+	return x > y 
+}
+
+func getStandardEnv() Env {
+	e := Env{
+		mapping: make(map[Symbol]Object),
+	}
+	e.mapping["*"] = mult
+	e.mapping["+"] = add 
+	e.mapping["-"] = sub 
+	e.mapping[">"] = gt 
+	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
 
+func (e *Env) eval(x Object) Object {
+	if val, is_symbol := x.(Symbol); is_symbol {
+		return e.mapping[val] 
+	} else if _, is_list := x.(List); !is_list {
+		return x 
+	} else if l := x.(List); l[0] == Symbol("define") {
+		val := e.eval(l[2])
+		e.mapping[ l[1].(Symbol) ] = val
+		return val
+	} else if l := x.(List); l[0] == Symbol("if") {
+		truth := e.eval(l[1]).(bool)
+		if truth {
+			return e.eval(l[2])
+		} else {
+			return e.eval(l[3])
+		}
+	} else if l := x.(List); l[0] == Symbol("lambda") {
+		return nil
+	} else {
+		proc := e.eval(l[0])
+		a1 := e.eval(l[1])
+		a2 := e.eval(l[2])
+		res := proc.(func(Object,Object)Object)(a1, a2)
+		return res
+	}
+}
+
 func main() {
-	program := "(begin (define r 10) (* pi (* r r)))"
-	fmt.Printf("%q\n", parse(program))
-//	e := getStandardEnv()
-//	result := e["abs"](-2.2)
-//	fmt.Println(result)
+	e := getStandardEnv()
+
+	e.eval(parse("(define r 10.3)"))
+	val := e.eval(parse("(define x (+ 10 (* pi (* r r))))"))
+	fmt.Println(val)
+	val = e.eval(parse("(if (> x 2) x 0)"))
+	fmt.Println(val)
 }
 
