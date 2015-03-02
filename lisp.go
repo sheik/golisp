@@ -141,10 +141,15 @@ func gte(args []Object) Object {
 	return x >= y
 }
 
+func begin(args []Object) Object {
+	return args[len(args)-1]
+}
+
 func getStandardEnv() Env {
 	e := Env{
 		mapping: make(map[Symbol]Object),
 	}
+	e.mapping["begin"] = begin
 	e.mapping["*"] = mult
 	e.mapping["/"] = div 
 	e.mapping["+"] = add

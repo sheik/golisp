@@ -22,6 +22,7 @@ func TestEval(t *testing.T) {
 		{"(fact 5)", Number(120)},
 		{"(fact 3)", Number(6)},
 		{"(fact 8)", Number(40320)},
+		{"(begin (define r 10) (* pi (* r r)))", Number(314.1592654)},
 	}
 	e := getStandardEnv()
 
