@@ -28,12 +28,6 @@ type Env struct {
 	outer   *Env
 }
 
-type Procedure struct {
-	body Object
-	args Object
-	env  *Env
-}
-
 type Object interface{}
 
 type List []Object
@@ -41,10 +35,6 @@ type List []Object
 type Symbol string
 
 type Number float64
-
-func (p *Procedure) call() Object {
-	return p.env.eval(p.body) 
-}
 
 func build_ast(tokens *[]string) Object {
 	token := pop(tokens)
@@ -151,7 +141,7 @@ func getStandardEnv() Env {
 	}
 	e.mapping["begin"] = begin
 	e.mapping["*"] = mult
-	e.mapping["/"] = div 
+	e.mapping["/"] = div
 	e.mapping["+"] = add
 	e.mapping["-"] = sub
 	e.mapping[">"] = gt
@@ -181,11 +171,11 @@ func (e *Env) eval(x Object) Object {
 	} else if l := x.(List); l[0] == Symbol("lambda") {
 		parms, body := l[1], l[2]
 		return func(args []Object) Object {
-				for i, v := range parms.(List) {
-					e.mapping[v.(Symbol)] = args[i]
-				}
-				return e.eval(body)
+			for i, v := range parms.(List) {
+				e.mapping[v.(Symbol)] = args[i]
 			}
+			return e.eval(body)
+		}
 	} else {
 		proc := e.eval(l[0])
 		var args []Object
