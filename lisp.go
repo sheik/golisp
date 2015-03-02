@@ -90,7 +90,7 @@ func mult(args []Object) Object {
 	for _, num := range args[1:] {
 		result *= num.(Number)
 	}
-	return result 
+	return result
 }
 
 func add(args []Object) Object {
@@ -98,7 +98,7 @@ func add(args []Object) Object {
 	for _, num := range args[1:] {
 		result += num.(Number)
 	}
-	return result 
+	return result
 }
 
 func sub(args []Object) Object {
@@ -106,7 +106,7 @@ func sub(args []Object) Object {
 	for _, num := range args[1:] {
 		result -= num.(Number)
 	}
-	return result 
+	return result
 }
 
 func gt(args []Object) Object {
@@ -127,7 +127,7 @@ func getStandardEnv() Env {
 	e.mapping["+"] = add
 	e.mapping["-"] = sub
 	e.mapping[">"] = gt
-	e.mapping["<"] = lt 
+	e.mapping["<"] = lt
 	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
