@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"bufio"
+	"os"
 	"strings"
 	"strconv"
 )
@@ -142,13 +144,18 @@ func (e *Env) eval(x Object) Object {
 	}
 }
 
+func repl(e Env) {
+	for {
+		reader := bufio.NewReader(os.Stdin)
+		fmt.Print("golisp> ")
+		text, _ := reader.ReadString('\n')
+		fmt.Println(e.eval(parse(text)))
+	}
+}
+
 func main() {
 	e := getStandardEnv()
 
-	e.eval(parse("(define r 10.3)"))
-	val := e.eval(parse("(define x (+ 10 (* pi (* r r))))"))
-	fmt.Println(val)
-	val = e.eval(parse("(if (> x 2) x 0)"))
-	fmt.Println(val)
+	repl(e)
 }
 
