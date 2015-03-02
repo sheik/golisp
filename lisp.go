@@ -30,8 +30,8 @@ type Env struct {
 
 type Procedure struct {
 	body Object
-	args []Object
-	env  Env
+	args Object
+	env  *Env
 }
 
 type Object interface{}
@@ -41,6 +41,10 @@ type List []Object
 type Symbol string
 
 type Number float64
+
+func (p *Procedure) call() Object {
+	return p.env.eval(p.body) 
+}
 
 func build_ast(tokens *[]string) Object {
 	token := pop(tokens)
@@ -109,6 +113,14 @@ func sub(args []Object) Object {
 	return result
 }
 
+func div(args []Object) Object {
+	result := args[0].(Number)
+	for _, num := range args[1:] {
+		result /= num.(Number)
+	}
+	return result
+}
+
 func gt(args []Object) Object {
 	x, y := args[0].(Number), args[1].(Number)
 	return x > y
@@ -119,15 +131,28 @@ func lt(args []Object) Object {
 	return x < y
 }
 
+func lte(args []Object) Object {
+	x, y := args[0].(Number), args[1].(Number)
+	return x <= y
+}
+
+func gte(args []Object) Object {
+	x, y := args[0].(Number), args[1].(Number)
+	return x >= y
+}
+
 func getStandardEnv() Env {
 	e := Env{
 		mapping: make(map[Symbol]Object),
 	}
 	e.mapping["*"] = mult
+	e.mapping["/"] = div 
 	e.mapping["+"] = add
 	e.mapping["-"] = sub
 	e.mapping[">"] = gt
+	e.mapping[">="] = gte
 	e.mapping["<"] = lt
+	e.mapping["<="] = lte
 	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
@@ -149,7 +174,13 @@ func (e *Env) eval(x Object) Object {
 			return e.eval(l[3])
 		}
 	} else if l := x.(List); l[0] == Symbol("lambda") {
-		return nil
+		parms, body := l[1], l[2]
+		return func(args []Object) Object {
+				for i, v := range parms.(List) {
+					e.mapping[v.(Symbol)] = args[i]
+				}
+				return e.eval(body)
+			}
 	} else {
 		proc := e.eval(l[0])
 		var args []Object

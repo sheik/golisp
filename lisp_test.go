@@ -18,8 +18,16 @@ func TestEval(t *testing.T) {
 		{"(* 2 (+ 3 (- 10 8)))", Number(10)},
 		{"(+ 2 2 2 2 2 2)", Number(12)},
 		{"(* 2 2 2)", Number(8)},
+		{"(circle-area 3)", Number(28.274333886)},
+		{"(fact 5)", Number(120)},
+		{"(fact 3)", Number(6)},
+		{"(fact 8)", Number(40320)},
 	}
 	e := getStandardEnv()
+
+	// define some functions
+	e.eval(parse("(define circle-area (lambda (r) (* pi (* r r))))"))
+	e.eval(parse("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"))
 
 	for _, c := range cases {
 		got := e.eval(parse(c.in))
