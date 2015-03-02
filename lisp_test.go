@@ -16,6 +16,8 @@ func TestEval(t *testing.T) {
 		{"(if (> x 2) x 0)", Number(343.2915646628601)},
 		{"(if (> 2 x) x 0)", Number(0)},
 		{"(* 2 (+ 3 (- 10 8)))", Number(10)},
+		{"(+ 2 2 2 2 2 2)", Number(12)},
+		{"(* 2 2 2)", Number(8)},
 	}
 	e := getStandardEnv()
 

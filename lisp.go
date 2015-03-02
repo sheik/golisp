@@ -85,24 +85,38 @@ func tokenize(chars string) []string {
 	return removeEmpty(strings.Split(chars, " "))
 }
 
-func mult(a, b Object) Object {
-	x, y := a.(Number), b.(Number)
-	return x * y
+func mult(args []Object) Object {
+	result := args[0].(Number)
+	for _, num := range args[1:] {
+		result *= num.(Number)
+	}
+	return result 
 }
 
-func add(a, b Object) Object {
-	x, y := a.(Number), b.(Number)
-	return x + y
+func add(args []Object) Object {
+	result := args[0].(Number)
+	for _, num := range args[1:] {
+		result += num.(Number)
+	}
+	return result 
 }
 
-func sub(a, b Object) Object {
-	x, y := a.(Number), b.(Number)
-	return x - y
+func sub(args []Object) Object {
+	result := args[0].(Number)
+	for _, num := range args[1:] {
+		result -= num.(Number)
+	}
+	return result 
 }
 
-func gt(a, b Object) Object {
-	x, y := a.(Number), b.(Number)
+func gt(args []Object) Object {
+	x, y := args[0].(Number), args[1].(Number)
 	return x > y
+}
+
+func lt(args []Object) Object {
+	x, y := args[0].(Number), args[1].(Number)
+	return x < y
 }
 
 func getStandardEnv() Env {
@@ -113,6 +127,7 @@ func getStandardEnv() Env {
 	e.mapping["+"] = add
 	e.mapping["-"] = sub
 	e.mapping[">"] = gt
+	e.mapping["<"] = lt 
 	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
@@ -137,9 +152,11 @@ func (e *Env) eval(x Object) Object {
 		return nil
 	} else {
 		proc := e.eval(l[0])
-		a1 := e.eval(l[1])
-		a2 := e.eval(l[2])
-		res := proc.(func(Object, Object) Object)(a1, a2)
+		var args []Object
+		for _, v := range l[1:] {
+			args = append(args, e.eval(v))
+		}
+		res := proc.(func([]Object) Object)(args)
 		return res
 	}
 }
