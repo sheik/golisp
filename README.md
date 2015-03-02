@@ -21,3 +21,17 @@ It currently supports a subset of LISP, but important features already work:
 	45238.9342176
 	golisp> 
 
+It is also pretty fast:
+
+	[jar@cyprus golisp]$ golisp -profile
+	golisp> (define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))
+	0x403b60
+	Execution took 284.094µs
+	golisp> (fact 100)
+	9.33262154439441e+157
+	Execution took 3.127316ms
+	golisp> (fact 100)
+	9.33262154439441e+157
+	Execution took 1.614446ms
+
+

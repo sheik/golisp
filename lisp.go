@@ -2,10 +2,12 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 )
 
 func removeEmpty(tokens []string) []string {
@@ -19,6 +21,12 @@ func removeEmpty(tokens []string) []string {
 }
 
 func parse(program string) Object {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Parse Error:", r)
+		}
+	}()
+
 	tokens := tokenize(program)
 	return build_ast(&tokens)
 }
@@ -153,6 +161,12 @@ func getStandardEnv() Env {
 }
 
 func (e *Env) eval(x Object) Object {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Eval Error:", r)
+		}
+	}()
+
 	if val, is_symbol := x.(Symbol); is_symbol {
 		return e.mapping[val]
 	} else if _, is_list := x.(List); !is_list {
@@ -187,17 +201,33 @@ func (e *Env) eval(x Object) Object {
 	}
 }
 
-func repl(e Env) {
+func repl(e Env, profile_code bool) {
 	for {
 		reader := bufio.NewReader(os.Stdin)
 		fmt.Print("golisp> ")
 		text, _ := reader.ReadString('\n')
-		fmt.Println(e.eval(parse(text)))
+		if profile_code {
+			start := time.Now()
+			val := e.eval(parse(text))
+			elapsed := time.Since(start)
+			fmt.Println(val)
+			fmt.Println("Execution took", elapsed)
+		} else {
+			fmt.Println(e.eval(parse(text)))
+		}
 	}
 }
 
 func main() {
-	e := getStandardEnv()
+	profile_code := flag.Bool("profile", false, "profile code execution time")
+	show_version := flag.Bool("version", false, "show program version and exit")
+	flag.Parse()
 
-	repl(e)
+	if *show_version {
+		fmt.Println("golisp v0.1")
+		os.Exit(0)
+	}
+
+	e := getStandardEnv()
+	repl(e, *profile_code)
 }
