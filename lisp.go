@@ -12,6 +12,7 @@ import (
 
 const (
 	VERSION = "golisp v1.0.2.1"
+	VERBOSE = false
 )
 
 func removeEmpty(tokens []string) []string {
@@ -25,11 +26,13 @@ func removeEmpty(tokens []string) []string {
 }
 
 func parse(program string) Object {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Parse Error:", r)
-		}
-	}()
+	if VERBOSE {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Parse Error:", r)
+			}
+		}()
+	}
 
 	tokens := tokenize(program)
 	return build_ast(&tokens)
@@ -47,6 +50,12 @@ type List []Object
 type Symbol string
 
 type Number float64
+
+type Lambda struct {
+	env Env
+	parms Object
+	body Object
+}
 
 func build_ast(tokens *[]string) Object {
 	token := pop(tokens)
@@ -147,6 +156,14 @@ func begin(args []Object) Object {
 	return args[len(args)-1]
 }
 
+func car(args []Object) Object {
+	return args[0]
+}
+
+func cdr(args []Object) Object {
+	return args[1:]
+}
+
 func getStandardEnv() Env {
 	e := Env{
 		mapping: make(map[Symbol]Object),
@@ -160,16 +177,20 @@ func getStandardEnv() Env {
 	e.mapping[">="] = gte
 	e.mapping["<"] = lt
 	e.mapping["<="] = lte
+	e.mapping["car"] = car 
+	e.mapping["cdr"] = cdr 
 	e.mapping["pi"] = Number(3.141592654)
 	return e
 }
 
 func (e *Env) eval(x Object) Object {
-	defer func() {
-		if r := recover(); r != nil {
-			fmt.Println("Eval Error:", r)
-		}
-	}()
+	if(VERBOSE) {
+		defer func() {
+			if r := recover(); r != nil {
+				fmt.Println("Eval Error:", r)
+			}
+		}()
+	}
 
 	if val, is_symbol := x.(Symbol); is_symbol {
 		return e.mapping[val]
@@ -188,14 +209,32 @@ func (e *Env) eval(x Object) Object {
 		}
 	} else if l := x.(List); l[0] == Symbol("lambda") {
 		parms, body := l[1], l[2]
-		return func(args []Object) Object {
-			for i, v := range parms.(List) {
-				e.mapping[v.(Symbol)] = args[i]
-			}
-			return e.eval(body)
+		newenv :=  Env{}
+		newenv.mapping = make(map[Symbol]Object)
+		for k,v := range e.mapping {
+			newenv.mapping[k] = v	
 		}
+		return Lambda{newenv, parms, body}
 	} else {
+		l := x.(List)
+
 		proc := e.eval(l[0])
+
+		if ln, is_lambda := proc.(Lambda); is_lambda {
+			env := Env{}
+			env.mapping = make(map[Symbol]Object)
+			for k,v := range e.mapping {
+				env.mapping[k] = v	
+			}
+
+			for i, v := range ln.parms.(List) {
+				val := env.eval(l[i+1])
+				env.mapping[v.(Symbol)] = val 
+			}
+
+			return env.eval(ln.body) 
+		}
+ 
 		var args []Object
 		for _, v := range l[1:] {
 			args = append(args, e.eval(v))

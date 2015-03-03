@@ -23,12 +23,24 @@ func TestEval(t *testing.T) {
 		{"(fact 3)", Number(6)},
 		{"(fact 8)", Number(40320)},
 		{"(begin (define r 10) (* pi (* r r)))", Number(314.1592654)},
+		{"(fib 0)", Number(1)},
+		{"(fib 1)", Number(1)},
+		{"(fib 2)", Number(2)},
+		{"(fib 3)", Number(3)},
+		{"(fib 4)", Number(5)},
+		{"(fib 5)", Number(8)},
+		{"(fib 6)", Number(13)},
+		{"(fib 7)", Number(21)},
+		{"(fib 8)", Number(34)},
+		{"(fib 9)", Number(55)},
+		{"(fib 10)", Number(89)},
 	}
 	e := getStandardEnv()
 
 	// define some functions
 	e.eval(parse("(define circle-area (lambda (r) (* pi (* r r))))"))
 	e.eval(parse("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"))
+	e.eval(parse("(define fib (lambda (n) (if (<= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))))"))
 
 	for _, c := range cases {
 		got := e.eval(parse(c.in))
