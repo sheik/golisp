@@ -1,4 +1,11 @@
 
+Version 1.0.3.0
+===============
+ *   Fixed lambda function environment copying to prevent shared env 
+ *   Adding quote built-in. Fixed car/cdr which now function properly. Added tests for car/cdr/quote
+ *   Adding print
+ *   Adding some documentation 
+
 Version 1.0.2.1
 ===============
  *   Fixing version numbering scheme
