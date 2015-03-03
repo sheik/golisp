@@ -34,6 +34,8 @@ func TestEval(t *testing.T) {
 		{"(fib 8)", Number(34)},
 		{"(fib 9)", Number(55)},
 		{"(fib 10)", Number(89)},
+		{"(car (quote (5 4 3 2 1)))", Number(5)},
+		{"(second (quote (1 2 3 4 5)))", Number(2)},
 	}
 	e := getStandardEnv()
 
@@ -41,6 +43,7 @@ func TestEval(t *testing.T) {
 	e.eval(parse("(define circle-area (lambda (r) (* pi (* r r))))"))
 	e.eval(parse("(define fact (lambda (n) (if (<= n 1) 1 (* n (fact (- n 1))))))"))
 	e.eval(parse("(define fib (lambda (n) (if (<= n 1) 1 (+ (fib (- n 1)) (fib (- n 2)))))))"))
+	e.eval(parse("(define second (lambda (x) (car (cdr x))))"))
 
 	for _, c := range cases {
 		got := e.eval(parse(c.in))

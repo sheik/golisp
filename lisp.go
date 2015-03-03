@@ -157,11 +157,11 @@ func begin(args []Object) Object {
 }
 
 func car(args []Object) Object {
-	return args[0]
+	return args[0].(List)[0]
 }
 
 func cdr(args []Object) Object {
-	return args[1:]
+	return args[0].(List)[1:]
 }
 
 func getStandardEnv() Env {
@@ -196,6 +196,9 @@ func (e *Env) eval(x Object) Object {
 		return e.mapping[val]
 	} else if _, is_list := x.(List); !is_list {
 		return x
+	} else if l := x.(List); l[0] == Symbol("quote") {
+		exp := l[1]
+		return exp
 	} else if l := x.(List); l[0] == Symbol("define") {
 		val := e.eval(l[2])
 		e.mapping[l[1].(Symbol)] = val
